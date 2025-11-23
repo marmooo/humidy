@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head prefix="og: http://ogp.me/ns#">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A GM2 MIDI mixer app powered by Midy.">
+    <title>Humidy</title>
+    <meta property="og:title" content="Humidy">
+    <meta property="og:site_name" content="Humidy">
+    <meta property="og:description" content="A GM2 MIDI mixer app powered by Midy.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://marmooo.github.io/humidy/">
+    <meta property="og:image" content="https://marmooo.github.io/humidy/favicon/apple-touch-icon.png">
+    <meta name="twitter:card" content="summary">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-F2179JXDYY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-F2179JXDYY');
+    </script>
+    <link class="drop-inline-css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <style>
+      html[data-bs-theme="dark"] .btn-light {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: var(--bs-gray-800);
+        --bs-btn-border-color: var(--bs-gray-800);
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: var(--bs-gray-700);
+        --bs-btn-hover-border-color: var(--bs-gray-600);
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: var(--bs-gray-600);
+        --bs-btn-active-border-color: var(--bs-gray-500);
+      }
+      @font-face {
+        font-family: "MIDIPlayerIcons";
+        src: url("https://marmooo.github.io/midi-player/midi-player-icons.woff2") format("woff2");
+      }
+      .midi-player-btn {
+        font-family: MIDIPlayerIcons;
+        font-size: 24px;
+        line-height: 1;
+      }
+      #midi-player { height:34px; }
+      .vrange-container {
+        display: inline-block;
+        width: 20px;
+        height: 120px;
+        position: relative;
+      }
+      input.vrange {
+        width: 120px;
+        height: 20px;
+        -webkit-appearance: none;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: 0;
+        transform: translate(-50%, -50%) rotate(-90deg);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="navbar navbar-expand">
+        <div class="container flex-wrap">
+          <a class="navbar-brand" href="/humidy/">
+            Humidy
+          </a>
+          <div class="navbar-nav">
+            <button title="toggle dark-mode" id="toggleDarkMode" class="fs-4 btn p-0 ms-1" type="button">🌓</button>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main class="container table-responsive">
+      <p>A GM2 MIDI mixer app powered by <a href="https://github.com/marmooo/midy">Midy</a>.</p>
+      <div class="text-center">
+        <div>
+          <button id="selectMIDI" class="btn btn-lg btn-primary rounded-pill">Select MIDI</button>
+          <input id="inputMIDI" type="file" accept=".mid,.midi" hidden="">
+        </div>
+        or drop a file.
+      </div>
+      <div id="midi-player"></div>
+      <details open>
+        <summary>Tuning</summary>
+        <form id="tuningForm" class="d-flex flex-wrap pt-1">
+          <fieldset id="ReverbType" class="card flex-fill">
+            <legend class="card-header h6">Reverb Type</legend>
+            <div class="card-body">
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="reverbType" value="0">
+                  #0 Small Room
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="reverbType" value="1">
+                  #1 Medium Room
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="reverbType" value="2">
+                  #2 Large Room
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="reverbType" value="3">
+                  #3 Medium Hall
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="reverbType" value="4" checked>
+                  #4 Large Hall
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="reverbType" value="8">
+                  #8 Plate
+                </label>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset id="ChorusType" class="card flex-fill">
+            <legend class="card-header h6">Chorus Type</legend>
+            <div class="card-body">
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="chorusType" value="0">
+                  #0 Chorus 1
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="chorusType" value="1" checked>
+                  #1 Chorus 2
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="chorusType" value="2">
+                  #2 Chorus 3
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="chorusType" value="3">
+                  #3 Chorus 4
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="chorusType" value="4">
+                  #4 FB Chorus
+                </label>
+              </div>
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="radio" name="chorusType" value="5">
+                  #5 Flanger
+                </label>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset id="ScaleOctaveTuning" class="card flex-fill">
+            <legend class="card-header h6">Scale Octave Tuning (ALL Channels)</legend>
+            <div class="card-body">
+              <table class="table table-sm table-striped text-center">
+                <tbody>
+                  <tr>
+                    <td>C</td>
+                    <td>C#</td>
+                    <td>D</td>
+                    <td>D#</td>
+                    <td>E</td>
+                    <td>F</td>
+                    <td>F#</td>
+                    <td>G</td>
+                    <td>G#</td>
+                    <td>A</td>
+                    <td>A#</td>
+                    <td>B</td>
+                  </tr>
+                  <tr>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                    <td><div class="vrange-container"><input class="form-range vrange" type="range" value="64" min="0" max="127"></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </fieldset>
+          <fieldset id="ChannelPressureEffects" class="card flex-fill">
+            <legend class="card-header h6">Channel Pressure Effects (ALL Channels)</legend>
+            <div class="card-body">
+              <table class="table table-sm table-striped">
+                <tbody>
+                  <tr><td>Pitch</td><td><input data-index="0" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>Filter Cutoff</td><td><input data-index="1" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>Amplitude</td><td><input data-index="2" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>LFO Pitch Depth</td><td><input data-index="3" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                  <tr><td>LFO Filter Depth</td><td><input data-index="4" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                  <tr><td>LFO Amplitude Depth</td><td><input data-index="5" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </fieldset>
+          <fieldset id="PolyphonicKeyPressureEffects" class="card flex-fill">
+            <legend class="card-header h6">Polyphonic Key Pressure Effects (ALL Channels)</legend>
+            <div class="card-body">
+              <table class="table table-sm table-striped">
+                <tbody>
+                  <tr><td>Pitch</td><td><input data-index="0" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>Filter Cutoff</td><td><input data-index="1" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>Amplitude</td><td><input data-index="2" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>LFO Pitch Depth</td><td><input data-index="3" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                  <tr><td>LFO Filter Depth</td><td><input data-index="4" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                  <tr><td>LFO Amplitude Depth</td><td><input data-index="5" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </fieldset>
+          <fieldset id="ControlChangeEffects" class="card flex-fill">
+            <legend class="card-header h6">Control Change Effects (ALL Channels/CCs)</legend>
+            <div class="card-body">
+              <table class="table table-sm table-striped">
+                <tbody>
+                  <tr><td>Pitch</td><td><input data-index="0" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>Filter Cutoff</td><td><input data-index="1" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>Amplitude</td><td><input data-index="2" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>LFO Pitch Depth</td><td><input data-index="3" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                  <tr><td>LFO Filter Depth</td><td><input data-index="4" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                  <tr><td>LFO Amplitude Depth</td><td><input data-index="5" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </fieldset>
+          <fieldset id="KeyBasedInstrumentControl" class="card flex-fill">
+            <legend class="card-header h6">Key-Based Controller (ALL Channels/Drums)</legend>
+            <div class="card-body">
+              <table class="table table-sm table-striped">
+                <tbody>
+                  <tr><td>Volume</td><td><input data-index="7" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>Pan</td><td><input data-index="10" class="form-range" type="range" value="64" min="0" max="127"></td></tr>
+                  <tr><td>Reverb Send</td><td><input data-index="91" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                  <tr><td>Chorus Send</td><td><input data-index="93" class="form-range" type="range" value="0" min="0" max="127"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </fieldset>
+        </form>
+      </details>
+      <form id="mixerForm">
+        <table class="table table-striped">
+          <tbody>
+            <tr>
+              <td></td>
+              <td>Channel</td>
+              <td>Operation</td>
+              <td>Value</td>
+            </tr>
+            <tr>
+              <td>
+                <button class="btn p-0" type="button">➕</button>
+                <button class="btn p-0" type="button">❌</button>
+              </td>
+              <td>
+                <select name="channelSelect" class="form-select form-select-sm">
+                  <option value="-1">ALL</option>
+                  <option value="0">1</option>
+                  <option value="1">2</option>
+                  <option value="2">3</option>
+                  <option value="3">4</option>
+                  <option value="4">5</option>
+                  <option value="5">6</option>
+                  <option value="6">7</option>
+                  <option value="7">8</option>
+                  <option value="8">9</option>
+                  <option value="9">10</option>
+                  <option value="10">11</option>
+                  <option value="11">12</option>
+                  <option value="12">13</option>
+                  <option value="13">14</option>
+                  <option value="14">15</option>
+                  <option value="15">16</option>
+                </select>
+              </td>
+              <td>
+                <select name="ccSelect" class="form-select form-select-sm">
+                  <optgroup label="CC">
+                    <option value="CC1">CC#1 Modulation Depth</option>
+                    <option value="CC5">CC#5 Portamento Time</option>
+                    <option value="CC7">CC#7 Volume</option>
+                    <option value="CC10">CC#10 Pan</option>
+                    <option value="CC11">CC#11 Expression</option>
+                    <option value="CC64">CC#64 Sustain Pedal</option>
+                    <option value="CC65">CC#65 Portamento</option>
+                    <option value="CC66">CC#66 Sostenuto Pedal</option>
+                    <option value="CC67">CC#67 Soft Pedal</option>
+                    <option value="CC71">CC#71 Filter Resonance</option>
+                    <option value="CC72">CC#72 Release Time</option>
+                    <option value="CC73">CC#73 Attack Time</option>
+                    <option value="CC74">CC#74 Brightness</option>
+                    <option value="CC75">CC#75 Decay Time</option>
+                    <option value="CC76">CC#76 Vibrato Rate</option>
+                    <option value="CC77">CC#77 Vibrato Depth</option>
+                    <option value="CC78">CC#78 Vibrato Delay</option>
+                    <option value="CC91">CC#91 Reverb Send Level</option>
+                    <option value="CC93">CC#93 Chorus Send Level</option>
+                  </optgroup>
+                  <optgroup label="MIDI Event">
+                    <option value="EventProgramChange">Program Change</option>
+                    <option value="EventPitchBend">Pitch Bend</option>
+                    <option value="EventChannelPressure">Channel Pressure</option>
+                    <option value="EventPolyphonicKeyPressure">Polyphonic Key Pressure</option>
+                  </optgroup>
+                  <optgroup label="RPN / SysEx">
+                    <option value="PitchBendRange">Pitch Bend Range</option>
+                    <option value="FineTuning">Fine Tuning</option>
+                    <option value="CoarseTuning">Coarse Tuning</option>
+                    <option value="ReverbTime">Reverb Time</option>
+                    <option value="ChorusModRate">Chorus Mod Rate</option>
+                    <option value="ChorusModDepth">Chorus Mod Depth</option>
+                    <option value="ChorusFeedback">Chorus Feedback</option>
+                    <option value="ChorusSendToReverb">Chorus Send To Reverb</option>
+                  </optgroup>
+                </select>
+              </td>
+              <td>
+                <input class="form-range" type="range" value="0" min="0" max="1" step="0.01">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </main>
+    <footer class="pt-4 alert text-center">
+      <div>
+        <a class="px-1" href="/">Home</a>
+        <a class="px-1" href="/terms/">Terms</a>
+        <a class="px-1" href="https://github.com/marmooo/humidy">Contact</a>
+      </div>
+      <div class="text-muted">&copy; <a href="https://github.com/marmooo">marmooo</a></div>
+    </footer>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
