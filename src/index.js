@@ -279,6 +279,14 @@ function setEvents() {
   setMixerButtonEvents();
 }
 
+async function loadMIDI(file) {
+  if (!file) return;
+  await midiPlayer.handleStop();
+  const arrayBuffer = await file.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  await midiPlayer.loadMIDI(uint8Array);
+}
+
 const midy = new Midy(new AudioContext());
 await midy.audioContext.suspend();
 const midiPlayer = new MIDIPlayer(midy);
@@ -292,14 +300,20 @@ document.getElementById("toggleDarkMode").onclick = toggleDarkMode;
 document.getElementById("selectMIDI").onclick = () => {
   document.getElementById("inputMIDI").click();
 };
-document.getElementById("inputMIDI").addEventListener(
-  "change",
-  async (event) => {
-    await midiPlayer.handleStop();
-    const file = event.target.files[0];
-    if (!file) return;
-    const arrayBuffer = await file.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    await midiPlayer.loadMIDI(uint8Array);
-  },
-);
+document.getElementById("inputMIDI").addEventListener("change", (event) => {
+  loadMIDI(event.target.files[0]);
+});
+globalThis.ondragover = (event) => {
+  event.preventDefault();
+};
+globalThis.ondrop = (event) => {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  loadMIDI(file);
+};
+globalThis.addEventListener("paste", (event) => {
+  const item = event.clipboardData.items[0];
+  const file = item.getAsFile();
+  if (!file) return;
+  loadMIDI(file);
+});
