@@ -287,6 +287,25 @@ async function loadMIDI(file) {
   await midiPlayer.loadMIDI(uint8Array);
 }
 
+async function loadSoundFont(file) {
+  if (!file) return;
+  const arrayBuffer = await file.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  await midy.loadSoundFont(uint8Array);
+}
+
+async function loadFile(file) {
+  const extName = file.name.split(".").at(-1).toLowerCase();
+  switch (extName) {
+    case "mid":
+    case "midi":
+      return await loadMIDI(file);
+    case "sf2":
+    case "sf3":
+      return await loadSoundFont(file);
+  }
+}
+
 const midy = new Midy(new AudioContext());
 await midy.audioContext.suspend();
 const midiPlayer = new MIDIPlayer(midy);
@@ -297,11 +316,11 @@ document.getElementById("midi-player").appendChild(midiPlayer.root);
 setEvents();
 
 document.getElementById("toggleDarkMode").onclick = toggleDarkMode;
-document.getElementById("selectMIDI").onclick = () => {
-  document.getElementById("inputMIDI").click();
+document.getElementById("selectFile").onclick = () => {
+  document.getElementById("inputFile").click();
 };
-document.getElementById("inputMIDI").addEventListener("change", (event) => {
-  loadMIDI(event.target.files[0]);
+document.getElementById("inputFile").addEventListener("change", (event) => {
+  loadFile(event.target.files[0]);
 });
 globalThis.ondragover = (event) => {
   event.preventDefault();
@@ -309,11 +328,11 @@ globalThis.ondragover = (event) => {
 globalThis.ondrop = (event) => {
   event.preventDefault();
   const file = event.dataTransfer.files[0];
-  loadMIDI(file);
+  loadFile(file);
 };
 globalThis.addEventListener("paste", (event) => {
   const item = event.clipboardData.items[0];
   const file = item.getAsFile();
   if (!file) return;
-  loadMIDI(file);
+  loadFile(file);
 });
