@@ -150,14 +150,12 @@ function setKeyBasedController(index, value, scheduleTime) {
 
 async function setProgramChange(channelNumber, programNumber, scheduleTime) {
   const channel = midy.channels[channelNumber];
-  const table = midy.soundFontTable[programNumber];
-  const bankNumber = midy.calcBank(channel);
-  if (table.has(bankNumber)) return;
-  const soundFontURL = midiPlayer.soundFontURL;
+  const bankNumber = channel.isDrum ? 128 : channel.bankLSB;
+  const index = midy.soundFontTable[programNumber][bankNumber];
+  if (index !== undefined) return;
   const program = programNumber.toString().padStart(3, "0");
-  const path = channel.isDrum
-    ? `${soundFontURL}/128.sf3`
-    : `${soundFontURL}/${program}.sf3`;
+  const baseName = bankNumber === 128 ? "128" : program;
+  const path = `${midiPlayer.soundFontURL}/${baseName}.sf3`;
   await midy.loadSoundFont(path);
   midy.setProgramChange(channelNumber, programNumber, scheduleTime);
 }
