@@ -305,8 +305,9 @@ async function loadFile(file) {
   }
 }
 
-const midy = new Midy(new AudioContext());
-await midy.audioContext.suspend();
+const audioContext = new AudioContext();
+if (audioContext.state === "running") await audioContext.suspend();
+const midy = new Midy(audioContext);
 const midiPlayer = new MIDIPlayer(midy);
 midiPlayer.defaultLayout();
 applyTheme(midiPlayer);
