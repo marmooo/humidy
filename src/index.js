@@ -1,4 +1,4 @@
-import { Midy } from "https://cdn.jsdelivr.net/gh/marmooo/midy@0.5.2/dist/midy.min.js";
+import { Midy } from "https://cdn.jsdelivr.net/gh/marmooo/midy@0.5.6/dist/midy.min.js";
 import { MIDIPlayer } from "https://cdn.jsdelivr.net/npm/@marmooo/midi-player@0.0.6/+esm";
 
 function applyTheme(midiPlayer) {
@@ -245,7 +245,7 @@ async function setProgramChange(channelNumber, programNumber, scheduleTime) {
     const path = `${midiPlayer.soundFontURL}/${baseName}.sf3`;
     await midy.loadSoundFont(path);
   }
-  midy.setProgramChange(channelNumber, programNumber, scheduleTime);
+  channel.setProgramChange(programNumber, scheduleTime);
 }
 
 function setMixerInputEvents() {
@@ -256,69 +256,69 @@ function setMixerInputEvents() {
     const tr = input.closest("tr");
     const tds = tr.querySelectorAll("td");
     const now = midy.audioContext.currentTime;
-    const channel = Number(tds[1].querySelector("select").value);
+    const channelNumber = Number(tds[1].querySelector("select").value);
+    const channels = midy.channels;
     const operation = tds[2].querySelector("select").value;
     if (operation.startsWith("CC")) {
       const controllerType = Number(operation.slice(2));
       const value = Math.ceil(Number(input.value) * 127);
-      if (channel < 0) {
+      if (channelNumber < 0) {
         for (let i = 0; i < 16; i++) {
-          midy.setControlChange(i, controllerType, value, now);
+          channels[i].setControlChange(controllerType, value, now);
         }
       } else {
-        midy.setControlChange(channel, controllerType, value, now);
+        channels[channelNumber].setControlChange(controllerType, value, now);
       }
     } else if (operation.startsWith("Event")) {
       const funcName = `set${operation.slice(5)}`;
       const value = Math.ceil(Number(input.value) * 127);
       if (funcName === "setProgramChange") {
-        if (channel < 0) {
+        if (channelNumber < 0) {
           const promises = new Array(16);
           for (let i = 0; i < 16; i++) {
             promises[i] = setProgramChange(i, value, now);
           }
           await Promise.all(promises);
         } else {
-          await setProgramChange(channel, value, now);
+          await setProgramChange(channelNumber, value, now);
         }
       } else {
-        if (channel < 0) {
+        if (channelNumber < 0) {
           for (let i = 0; i < 16; i++) {
-            midy[funcName](i, value, now);
+            channels[i][funcName](value, now);
           }
         } else {
-          midy[funcName](channel, value, now);
+          channels[channelNumber][funcName](value, now);
         }
       }
     } else {
       switch (operation) {
         case "FineTuning": {
           const value = (Number(input.value) - 0.5) * 200;
-          if (channel < 0) {
+          if (channelNumber < 0) {
             midy.setMasterFineTuning(value, now);
           } else {
-            midy.setFineTuning(channel, value, now);
+            channels[channelNumber].setFineTuning(value, now);
           }
           break;
         }
         case "CoarseTuning": {
           const value = (Number(input.value) * 127 - 64) * 100;
-          if (channel < 0) {
+          if (channelNumber < 0) {
             midy.setMasterCoarseTuning(value, now);
           } else {
-            midy.setCoarseTuning(channel, value, now);
+            channels[channelNumber].setCoarseTuning(value, now);
           }
           break;
         }
         case "PitchBendRange": {
           const value = Number(input.value) * 12800;
-          const funcName = `set${operation}`;
-          if (channel < 0) {
+          if (channelNumber < 0) {
             for (let i = 0; i < 16; i++) {
-              midy[funcName](i, value, now);
+              channels[i].setPitchBendRange(value, now);
             }
           } else {
-            midy[funcName](i, value, now);
+            channels[channelNumber].setPitchBendRange(value, now);
           }
           break;
         }
