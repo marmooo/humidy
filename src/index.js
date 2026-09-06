@@ -1,4 +1,4 @@
-import { Midy } from "https://cdn.jsdelivr.net/gh/marmooo/midy@0.6.4/dist/midy.min.js";
+import { Midy } from "https://cdn.jsdelivr.net/gh/marmooo/midy@0.6.5/dist/midy.min.js";
 import { MIDIPlayer } from "https://cdn.jsdelivr.net/npm/@marmooo/midi-player@0.0.8/+esm";
 import { Modal } from "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/+esm";
 import { MidiLibrary } from "https://marmooo.github.io/free-midi/midi-library.js";
@@ -145,9 +145,9 @@ async function setProgramChange(channelNumber, programNumber, scheduleTime) {
   const bankNumber = channel.isDrum ? 128 : channel.bankLSB;
   const index = midy.soundFontTable[programNumber][bankNumber];
   if (index === undefined) {
+    const bank = bankNumber.toString().padStart(3, "0");
     const program = programNumber.toString().padStart(3, "0");
-    const baseName = bankNumber === 128 ? "128" : program;
-    const path = `${midiPlayer.soundFontURL}/${baseName}.sf3`;
+    const path = `${midiPlayer.soundFontURL}/${bank}/${program}.sf3`;
     await midy.loadSoundFont(path);
   }
   channel.setProgramChange(programNumber, scheduleTime);
@@ -371,7 +371,7 @@ async function loadSoundFontLibrary() {
     el.innerHTML = "";
     list.forEach((sf, i) => {
       const id = `soundFontLibraryItem-${i}`;
-      const checked = sf.name === "GeneralUser_GS_v1.471";
+      const checked = sf.name === "GeneralUser_GS_v2.0.3";
       const wrap = document.createElement("div");
       wrap.className = "form-check";
       wrap.innerHTML =
