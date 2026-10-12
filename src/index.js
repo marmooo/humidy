@@ -3,6 +3,11 @@ import { MIDIPlayer } from "https://cdn.jsdelivr.net/npm/@marmooo/midi-player@0.
 import { Modal } from "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/+esm";
 import { MidiLibrary } from "https://marmooo.github.io/free-midi/midi-library.js";
 
+const MIDI_DB_MODERN = "https://midi-db.pages.dev";
+const MIDI_DB_CLASSICAL = "https://marmooo.github.io/classical-midi-db";
+/** Currently selected MIDI DB base URL (modern or classical). */
+let currentMidiDb = MIDI_DB_MODERN;
+
 function toggleDarkMode() {
   const html = document.documentElement;
   const newTheme = html.getAttribute("data-bs-theme") === "dark"
@@ -340,6 +345,7 @@ Modal.getOrCreateInstance(
 );
 
 const midiLibrary = new MidiLibrary({
+  midiDB: currentMidiDb,
   table: "libraryTable",
   pagination: "libraryPagination",
   columns: "libraryColumns",
@@ -347,7 +353,7 @@ const midiLibrary = new MidiLibrary({
   instruments: "libraryInstruments",
   lang: htmlLang,
   onSelect: async (row) => {
-    const buf = await (await fetch(`https://midi-db.pages.dev/${row.file}`))
+    const buf = await (await fetch(`${midiLibrary.midiDB}/${row.file}`))
       .arrayBuffer();
     await midiPlayer.handleStop();
     await midiPlayer.loadMIDI(new Uint8Array(buf));
@@ -356,6 +362,40 @@ const midiLibrary = new MidiLibrary({
   },
 });
 midiLibrary.load();
+
+/** Switch MIDI library between modern and classical collections. */
+let switchMidiCategoryBusy = false;
+async function switchMidiCategory(category) {
+  const nextDb = category === "classical" ? MIDI_DB_CLASSICAL : MIDI_DB_MODERN;
+  if (midiLibrary.midiDB === nextDb && midiLibrary.fullData) return;
+  if (switchMidiCategoryBusy) return;
+  switchMidiCategoryBusy = true;
+  try {
+    currentMidiDb = nextDb;
+    midiLibrary.midiDB = nextDb;
+    midiLibrary.collections.clear();
+    midiLibrary.fullData = null;
+    midiLibrary.destroy();
+    await midiLibrary.load();
+  } catch (err) {
+    console.error("Failed to switch MIDI category:", err);
+  } finally {
+    switchMidiCategoryBusy = false;
+  }
+}
+
+function initMidiCategoryRadios() {
+  const radios = document.querySelectorAll('input[name="midiLibraryCategory"]');
+  for (const radio of radios) {
+    radio.addEventListener("change", () => {
+      if (!radio.checked) return;
+      switchMidiCategory(radio.value).catch((err) =>
+        console.error("switchMidiCategory failed:", err)
+      );
+    });
+  }
+}
+initMidiCategoryRadios();
 
 // ---------------------------------------------------------------------------
 // soundfont library
